@@ -1,0 +1,183 @@
+Instrccion destino, fuente
+
+1. mov      Designa o mueve valores entre registros 
+mov rax, 2 
+    pone un 2 en rax 
+mov rbx, rax
+    pone en rbx lo que hay en rax
+mov rax, [direccion de memoria]
+    vaya a la direccion de memoria y ponga lo que hay alla en rax
+moc rax, [lo que quise poner] entonces toma la direccion de memoria de "lo que quise poner"
+mov rax, lo que quise poner      ; entonces toma "lo que quise poner"
+
+x86
+64bits -> 32 -> 16 -> 8 altos -> 8 bajos 
+8bytes -> 4bytes -> 2bytes -> 1byte alto -> 1byte bajo
+
+rax -> eax -> ax -> ah -> al
+rbx -> ebx -> bx -> bh -> bl 
+rcx -> ecx -> cx -> ch -> cl 
+rdx -> edx -> dx -> dh -> dl 
+
+    La siguiente instruccion no es valida
+mov rax, ecx 
+    Se necesita que tanto la fuente como el destino sean del mismo tamano 
+        una opcion seria 
+mov eax, ecx
+
+(mov ah, al) 
+
+2. cmp  Compara valores 
+cmp al, 0 
+    compara 0 con al en la ALU 
+
+Branches 
+3. je    jump if equal 
+je <nombre de una etiqueta>
+<nombre de una etiqueta> : vente para aca jump y ejecuta esta seccion de codigo 
+j_   donde _ es una letra
+estas letras dependen de las banderas de la ALU 
+
+4.1 call me permite saltar a una etiqueta 
+call <nombre de la etiqueta>
+        4.2 ret despues de saltar a una etiqueta, me permite regresar a donde me habia quedado  
+
+5. add  suma
+add ah, cx 
+    Tome lo que hay en cx y sumelo a ah, modificando ah
+add [rbx], byte 1 
+    Tome la direccion de memoria [rbx] y sumele 1 representado en 1 byte  
+6. addi suma sin considerar signo 
+
+7. inc incrementa en uno el contenido de un registro o de una posicion de memoria  
+inc ax  
+    Tome el contenido del registro de ax y aumentele 1 
+inc byte [rbx]
+    Tome la direccion en [rbx] y sume en 1 
+
+8. dec decrece en uno 
+dec ax 
+    Tome el contenido del registro de ax y restele 1 
+dec byte [rbx]
+    Tome la direcciond en rbx y restele 1 
+
+9. sub para restar o substraer
+sub ah, al 
+    Tome ah y restele lo que hay en al 
+sub ah, byte 5
+    Tome ah y restele 5 representado como 5
+
+10. syscall llamada a las instrucciones dependiendo del valor de rax 
+
+11. mul <ARG> puede tener un solo argumento que puede ser de 8, 16, 32, o 64 
+no se pueden multiplicar valores inmediatos solo registros o memoria
+
+    Espera en el registro AL AX EAX RAX el operando 1 y el segundo operando es el argumento 
+    va a devolver el valor registro con el doble del tamano para 8 return en 16 para 16 return en 32 para 64 return en 128
+mul dl multiplica lo que hay en el registro A del tamano correspondiente y lo pone en el del doble para este caso, AL * DL y pone el resultado en AX 
+mul eax  toma eax lo multiplica por eax y lo guarda en RAX // recuerda que murio eax  
+con instruciones a registros 
+
+mul cl lo guarda el resultado en ah al = ax como operando de 8
+mul cx lo guarda el resultado en dx ax por compatibilidad hacia atras como operando de 16 
+mul ecx guarda el resultado en edx eax igual por compatibilidad hacia atras como el operando de 32
+mul rcx guarda el resultado en rdx y rax por compatibilidad hacia atras como el operando de 64
+
+instrucciones con memoria
+mul byte [valor]
+
+vnum2: dq 25, 12, 16, 45
+mov rax, quadword 1 
+mul qword [vnum2]
+mul qword [vnum2+24] tercer elemento de un vector 
+
+mov rax, [vnum2]
+mul [vnum2+24] // Aqui ya se definio el tamano de memoria desde la section .data
+
+mov rax, [vnum2]
+mov rbx, vnum2
+mul [rbx+24] // Aqui ya esta definido el tamano desde la section .data
+
+mov rax, [vnum2]
+mov rbx, vnum2
+mov rcx, 24
+mul dqword [rbx+rcx] aqui no tenemos un tamano de memoria definido
+
+
+11.1 imul same pero con signo 
+
+12. div <ARG> Para realizar divisiones 
+    No se pueden dividir valores inmediatos solo registros y memoria   
+
+    Espera en el registro A con el doble del tamano de argumento 
+si <ARG> es de 8 bits, toma registro A de 16 bits como operando 1 ax
+si <ARG> de 16 bits, toma el registro D y el registro A para hacer 32 bits como operando 1 dx:ax
+si <ARG> de 32 bits, toma el registro D y el registro A para hacer 64 bits como operando 1 edx:eax
+si <ARG> de 64 bits, toma el registro D y el registro A para hacer 128 bits como operando 1 rdx:rax
+y pone los resultados en los registros de A del mismo tamano que el segundo operando, y pone el residuo en los registros D
+
+div ch
+    Divide lo que esta en ax entre ch, y coloca el resutlado en al y el residuo en ah 
+div word [num1] num1 es de 16
+    Divide dx:ax entre num1 y coloca el resultado en ax y el residuo en dx 
+div dword [num1] num1 es de 32 
+    divide edx:eax entre num1 y coloca el resultado en eax y el residuo en edx
+div qword [num1] 
+    Divide rdx:rax entre num1 y coloca el resultado en rax y el residuo en edx
+
+13. loop ---> muy similar a for, necesito etiquetas
+
+mov rcx, 5
+<etiqueta>:
+    
+    bloques de codigo
+
+loop <etiqueta> --->>> Aqui va a hacer 2 cosas dec rcx (le resta 1 a rcx) y va a preguntar a rcx == 0 (lo compara con 0) 
+verifica la etiqueta de rcx 
+
+
+Tipos de instrucciones
+
+A. instrucciones registro, registro
+    mov ah, al 
+    add ax, cx
+        Limitaciones 
+            Los registros deben ser del mismo tamaño
+            No debemos usar los registros DS, CS, SS, los de segmentos de codigo 
+B. instrucciones registro, inmediato
+    mov ah, 29  // Decimal 
+    add rax, 0xFF   //Hexadecimal
+    mov rax, 0111b   //Binario 
+        Limitaciones
+            Los valores deben caber dentro del registro 
+C. instrucciones memoria, inmediato
+    mov [x], byte 29
+    mov [rbx], word 10 
+    mov [y], doubleword 10
+    mov [rbx], quadword 0XFF
+    mov [rbx+rcx], byte 0 // Para este caso rcx deberia aumentar en uno ; inc 
+    mov [rbx+rcx], word 0 // Para este caso rcx deberia aumentar en dos ; add rcx, 2
+        Limitaciones 
+            Tengo que hacer explicito el tamaño del valor inmediato
+D. instrucciones registro, memoria
+    mov eax, [x]
+    add rax, [y]
+E. instrucciones memoria, registro
+    mov [eax], eax
+
+F. instricciones memoria, memoria 
+    mov [x], byte [y]
+        Limitaciones
+            No se puede hacer por limitaciones de hardware 
+Administracion de la memoria y los registros
+en memoria lo guardo como little, cuando lo voy a poner a registros debe ir en big endian 
+
+num: dd Ox11AACC55 en little se veria 
+(55 CC AA 11) -> ()2 en memoria 
+
+mov dx, [num] -> dx = CC 55 cuando va a recuperarlo le da la vuelta al little 
+
+Tenemos el valor, 11 AA CC 55 lo guardamos -> hace little entonces se guarda como 55 CC AA 11 
+cuando lo voy a buscar para ponerlo al registro le vuelve a dar la vuelta y saca 11 AA CC 55, si por alguna razon se me apetece truncarlo a algo mas pequeno 
+por ejemplo 2 bytes 16 bits toma la memoria los primeros 2 bytes guardados, recordemos que lo guardo como 55 CC AA 11, los primeros 2 Bytes son 55 CC, 
+y recordemos que por little les da la vuelta CC 55 

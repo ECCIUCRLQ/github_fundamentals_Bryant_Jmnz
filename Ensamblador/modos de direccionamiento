@@ -1,0 +1,74 @@
+TIPOS de ARGUMENTOS 
+    Registros 
+    Inmediatos 
+    Memoria 
+
+offset part ofr a memory adrress, desplazamientos de memoria
+    Displacement: desplazamientos de 8, 16, 32 bits  
+    Base: el valor en 64 bit 
+    Index:
+    Scale factor: Multiplica por 2, 4, 8 el valor de indice 
+
+Algunos ejemplos de lo ya visto, registro registro 
+add rax, rbx 
+mov cx, dx 
+sub al, cl 
+mov edi, ebx
+mov ax, ebx  // NO es valida
+mov ch, dil // NO son rex uno es legacy y otro es new byte register
+mov cl, dil 
+
+Algunos ejemplos de lo ya visto, registro memoria
+    sub dx, -16 // Es valida resta -16 a dx 
+    xor edi, 12 
+    and ah, 1000 // 1000 no cabe en ah 
+    cmp cl, FFh 
+    cmp cl, 0xFF
+    cmp cl, 0123h 
+    mov dl, 0x0A
+    or al, 0xOA // or al, 0x00A
+    add dl, "a"
+    and cx, "b"
+    or dx, "abc" // NO es valida no cabe 
+    or dx, "ab" // SI es valida
+    or edx, "abc" // SI es valida
+    sub edi, "x"
+    cmp rbx, 1000b // cmp rbx, 8 
+    mul 55 // NO es valida, no puedes tener una fuente inmediata para mul
+    cmp 35, 28 // NO tengo dos inmediatos, no hay instrucciones inmediato inmediato 
+    cmp byte 35, byte 28 ??
+    mov dx, 1.3 // los de punto flotante se representan de otra manera
+    add edi, 3.14 // Tecnicamente si, pero ALU y add no se puede flotantes 
+
+
+
+section .data 
+    a: dw 0x0124
+    b: dd 3.14, 6.20
+    c: db "a", 3, 0xFA
+        dw 45, 80 
+        dd -1
+    d: dq 20 
+    e: dt -9.0
+
+
+mov ax, a // Dirrecion no el contenido esta NO es valida la direccion para 64 bits es de 64 
+mov ax, [a] // Esta si es valida 
+mov rax, a // Esta si es valida este si tiene 64 
+mov rax, [a] // Si es valido, pero no esta bien, arrastra parte de b 
+mov rdi, [c] // toma un desmadre de memoria de lo de c casi todo 
+mov [a], dh // Tener cuidado porque si solo modificara una parte y por little endian
+mov [c], eax // Es una instruccion validad pero cae mal 
+mov [a], 5 // NO es valida hace falta definir el tamano de memoria 
+mov [a], word 5 // si es valida, coloca 00 05 lo coloca en a:  
+mul [d] // NO es valido pero tengo que indicar el tamano de memoria 
+mul qword[d] // SI es valida 
+div word [b] // Si es valida pero tiene que tener cuidado porque toma datos de la memoria diferentes a los definidos
+inc d // NO es valida
+inc [d] // NO es valida
+inc word [d] // Es valido pero un posible error logico 
+inc qword[d] //Es valido 
+add [e], 10 // NO es valido 
+add [e], byte 10// el problema es que defini e como flotante y no puedo usar add como instruccion para flotantes
+mov [a], [c] // No es valido tmapo mov [a], word [c], es memoria a memoria 
+mov a, 1000b //NO puedo caerle a una direccion de memoria
